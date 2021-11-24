@@ -42,15 +42,16 @@ class ploter(object):
         gazePoints = self.npData
 
         sca, = plt.plot(gazePoints[start_frame][1], gazePoints[start_frame][2], 'r-o')#初始点，创建sca对象
-
+        base_idx = self.start_frame
         def update(i):  # i:第i帧，即第i行数据
             x_data = []
             y_data = []
+            abs_idx = base_idx + i
             for m in range(-5, 6):#每次画周围10帧
                 if ((i + m) < 0 or (i + m) >= self.save_frames):
                     continue
-                x_data.append(gazePoints[i + m][1])
-                y_data.append(gazePoints[i + m][2])
+                x_data.append(gazePoints[abs_idx + m][1])#这里应该是gazePoints的第self.start_frame+i+m帧
+                y_data.append(gazePoints[abs_idx + m][2])
             sca.set_data(x_data, y_data)#更新scatter坐标
             return sca
 
@@ -58,7 +59,7 @@ class ploter(object):
                             func=update,#更新函数
                             frames=self.save_frames,
                             interval=33,#因为保存时单独设置fps，这个参数这里其实无意义
-                            blit=False)
+                            blit=False)#共 self.save_frame帧，每帧update一次
 
         ani.save(self.save_path, writer='ffmpeg', fps=30)
 
