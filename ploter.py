@@ -65,17 +65,16 @@ class ploter(object):
 
     def draw_events(self):
         '''
-        1、创建画布
-        2、贴背景图
-        3、更新函数
-            3.1、判断当前帧是在哪个event
-            3.2、更新动画
-        4、保存
-        :return:
+        由于无法解决arrow的属性变换，故此实现采用每帧重画的方式
+        主要实现在update函数：
+            1、清空画布
+            2、画底图
+            3、根据id判断event
+            4、画event
         '''
         fig_event, ax_event = plt.subplots()
         #pdb.set_trace()
-        ax_event.imshow(self.gd_img)
+        #ax_event.imshow(self.gd_img)
 
         #第一个注视event
         #base_sac = self.orderedEvents[0]
@@ -84,14 +83,16 @@ class ploter(object):
         #pdb.set_trace()
 
 
-        base_sac = self.gaze_events[0]
-        sca, = plt.plot(base_sac[3], base_sac[4], 'ro',markersize=20)#初始点
+        #base_sac = self.gaze_events[0]
+        #sca, = plt.plot(base_sac[3], base_sac[4], 'ro',markersize=20)#初始点
 
 
         def update_events(i):#这个i是从0开始的，而event的frame不是
+            #扫视如果迟迟没有得到更新就消失
             global event_idx
             #pdb.set_trace()
             cur_idx = i + self.start_frame
+            '''纯注视
             if(event_idx>=len(self.gaze_events)):
                 return sca
             if(cur_idx>=self.gaze_events[event_idx][1] and cur_idx <= self.gaze_events[event_idx][2]):#在当前event内
@@ -99,6 +100,29 @@ class ploter(object):
             if(cur_idx==self.gaze_events[event_idx][2]):#到达event末尾
                 event_idx += 1
             return sca
+            '''
+            #清空
+            ax_event.cla()
+            #画底图
+            ax_event.imshow(self.gd_img)
+            #判断event是否全部画完
+            if(event_idx >= len(self.orderedEvents)):
+                return
+            #判断是否到达一个event
+            if(cur_idx>=self.orderedEvents[event_idx][1] and cur_idx <= self.orderedEvents[event_idx][2]):
+                if(self.orderedEvents[event_idx][0] == 0):#gaze
+                    ga_event = self.orderedEvents[event_idx]
+                    sca, = plt.plot(ga_event[3],ga_event[4],'ro',markersize=20)
+                else:#saccade
+                    sac_event = self.orderedEvents[event_idx]
+                    x = sac_event[3]
+                    y = sac_event[4]
+                    dx = sac_event[5] - sac_event[3]
+                    dy = sac_event[6] - sac_event[4]
+                    ax_event.arrow(x,y,dx,dy,color='r',head_length=20,head_width=20)
+            if(cur_idx==self.orderedEvents[event_idx][2]):#到达event末尾
+                event_idx += 1
+
 
             '''#TODO 注视点逐渐变大，增加扫视箭头
             if(i>=self.orderedEvents[event_idx][1] and i <=self.orderedEvents[event_idx][2]):
@@ -252,7 +276,7 @@ class ploter(object):
 event_idx = 0
 #config
 start_time = 187
-end_time = 231
+end_time = 233
 start_frame = start_time*30
 end_frame = end_time*30
 img_width = 1102
@@ -261,10 +285,10 @@ save_frames = end_frame - start_frame
 
 eye_move_path = 'data/JsonData/eye_576.json'
 gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
-save_name = 'Stroop1_point.mp4'
+save_name = 'output/Stroop1_fullevent.mp4'
 #gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
 #gd image
 if __name__ == '__main__':
     plot = ploter(eye_move_path,start_time,end_time,img_width,img_height,gd_img_path,save_name)
     #plot.draw_gazePoints()
-    plot.draw_gazePoints()
+    plot.draw_events()
