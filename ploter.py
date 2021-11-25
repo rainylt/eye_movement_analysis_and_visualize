@@ -146,6 +146,10 @@ class ploter(object):
 
         ani.save(self.save_path, writer='ffmpeg', fps=30)
 
+    def merge_ani(self):
+        #TODO: merge event ani and point ani to one video
+        pass
+
 
     def get_events(self):#TODO: 得根据frame加event
         extractor = ga(self.ori_npData,conf.fixation_radius_threshold, conf.fixation_duration_threshold,
