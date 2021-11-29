@@ -57,6 +57,29 @@ class gazeAnalysis (object):
 	def get_sac(self):
 		return self.saccades
 
+	def stat_analysis(self):
+		#TODO statistically analyze the event information for one user
+		'''
+		gaze: duration, frequency
+		saccade: peak vel, frequency, max angle, mean angle
+		:return:
+		'''
+		duration = []
+		for gaze in self.fixations:
+			duration.append(gaze[7] - gaze[6])
+		mean_duration = np.mean(duration)/30 #frames/30 = time
+		gaze_freq = len(self.fixations)
+		vel = 0
+		rad = 0
+		for sac in self.saccades:
+			vel += sac[9]
+			rad += sac[4]
+		mean_vel = vel/len(self.saccades)
+		mean_rad = rad/len(self.saccades)
+		stat = [mean_duration, gaze_freq, mean_vel, mean_rad, len(self.saccades)]
+
+		return stat
+
 def json2np(eye_data):
 	event_list = []
 	frame_idx = 0
