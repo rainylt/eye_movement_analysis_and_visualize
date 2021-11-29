@@ -10,8 +10,14 @@ install ffmpeg for video saving
 conda config --add channels conda-forge
 conda install ffmpeg
 ```
+install moviepy for video editing
+```
+pip install moviepy
+```
 # Usage
 change config in `ploter.py` and
-`python ploter.py`
+```
+python ploter.py
+```
 # Reference
 - [eye-movements-predict-personality](https://github.com/sarikayamehmet/eye-movements-predict-personality)

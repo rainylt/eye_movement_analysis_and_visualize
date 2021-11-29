@@ -4,20 +4,23 @@ from matplotlib import pyplot as plt#创建子图
 import json#读取文件
 from gaze_analysis import gazeAnalysis as ga
 from config import conf
+from moviepy.editor import VideoFileClip, clips_array
 import pdb
 
 class ploter(object):
     '''
     visualize eye-movement data on image
     '''
-    def __init__(self, eye_move_path, start_time, end_time, img_width, img_height, gd_path, save_path):
+    def __init__(self, eye_move_path, start_time, end_time, img_width, img_height, gd_path, event_save_path, point_save_path):
         self.start_frame = start_time*30
         self.end_frame = end_time*30
         self.save_frames = self.end_frame - self.start_frame
         self.img_width = img_width
         self.img_height = img_height
         self.gd_path = gd_path#底图
-        self.save_path = save_path
+        self.event_save_path = event_save_path
+        self.point_save_path = point_save_path
+        #self.merge_save_path = merge_save_path
         self.eye_move_path = eye_move_path#eye.json
 
         self.prepare_data()
@@ -61,7 +64,8 @@ class ploter(object):
                             interval=33,#因为保存时单独设置fps，这个参数这里其实无意义
                             blit=False)#共 self.save_frame帧，每帧update一次
 
-        ani.save(self.save_path, writer='ffmpeg', fps=30)
+        ani.save(self.point_save_path, writer='ffmpeg', fps=30)
+        print('Draw points finished！')
 
     def draw_events(self):
         '''
@@ -144,11 +148,23 @@ class ploter(object):
                             interval=33,
                             blit=False)
 
-        ani.save(self.save_path, writer='ffmpeg', fps=30)
+        ani.save(self.event_save_path, writer='ffmpeg', fps=30)
+        print('Draw events finished！')
+
+    def get_merge_ani(self, merge_save_path):
+        self.draw_events()
+        self.draw_gazePoints()
+        final_clip = self.merge_ani()
+        final_clip.write_videofile(merge_save_path)
+        print('Merge Finished!')
 
     def merge_ani(self):
         #TODO: merge event ani and point ani to one video
-        pass
+        event_clip = VideoFileClip(self.event_save_path)
+        point_clip = VideoFileClip(self.point_save_path)
+        final_clip = clips_array([[event_clip],[point_clip]])
+
+        return final_clip
 
 
     def get_events(self):#TODO: 得根据frame加event
@@ -289,10 +305,12 @@ save_frames = end_frame - start_frame
 
 eye_move_path = 'data/JsonData/eye_576.json'
 gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
-save_name = 'output/Stroop1_fullevent.mp4'
+event_save_name = 'output/Stroop1_event.mp4'
+point_save_name = 'output/Stroop1_point.mp4'
+merge_save_name = 'output/Stroop1.mp4'
 #gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
 #gd image
 if __name__ == '__main__':
-    plot = ploter(eye_move_path,start_time,end_time,img_width,img_height,gd_img_path,save_name)
+    plot = ploter(eye_move_path,start_time,end_time,img_width,img_height,gd_img_path,event_save_name, point_save_name)
     #plot.draw_gazePoints()
-    plot.draw_events()
+    plot.get_merge_ani(merge_save_name)
