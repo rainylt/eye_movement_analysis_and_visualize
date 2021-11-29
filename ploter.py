@@ -10,9 +10,13 @@ import pdb
 class ploter(object):
     '''
     visualize eye-movement data on image
+    ***major func:
+    draw_gazePoints
+    draw_events
+    merge_ani
     '''
     def __init__(self, eye_move_path, start_time, end_time, img_width, img_height, gd_path, event_save_path, point_save_path):
-        self.start_frame = start_time*30
+        self.start_frame = start_time*30#30Hz
         self.end_frame = end_time*30
         self.save_frames = self.end_frame - self.start_frame
         self.img_width = img_width
