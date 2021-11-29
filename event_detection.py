@@ -145,6 +145,10 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			skip_count["less2"] += 1
 			continue
 
+		sac_angle = np.arctan2(dy, dx)
+		val_angle = sac_angle[1:-1]#exclude the first and last angle
+		max_angle = np.max(val_angle)
+		mean_angle = np.mean(val_angle)
 		distance = np.linalg.norm([dx, dy])
 		peak_velocity = np.amax(distance / dt)
 
@@ -205,6 +209,9 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			saccade.append(peak_velocity)  # 11. peak velocity
 
 			saccade.append(amplitude)  # 12. amplitude
+
+			saccades.append(max_angle)#11
+			saccades.append(mean_angle)#12
 
 			# append character representing this kind of saccade to the wordbook_string which will be used for n-gram features
 			sac_id = get_dictionary_entry_for_saccade(amplitude, fixation_radius_threshold, radians)
