@@ -104,12 +104,51 @@ class gazeAnalysis (object):
 		plt.savefig('output/saccade_analysis.png')
 
 	def reconstruct_feature(self):
+		self.rec_fixations = []
+		self.rec_saccades = []
 		for fix in self.fixations:
-			exp_idx = self.get_exp_idx
+			feature_vec = []
+			feature_vec.append(0)#fixation cls label
+			feature_vec.append(fix[4])#start time
+			feature_vec.append(fix[5])#end time
+			feature_vec.append(fix[10])
+			feature_vec.append(fix[11])
+			feature_vec.append(fix[12])
+			feature_vec.append(fix[13])#start coord and end coord
+			feature_vec.append(fix[0])
+			feature_vec.append(fix[1])#mean coord
+			feature_vec.append(fix[2])
+			feature_vec.append(fix[3])#var coord
+			feature_vec.append(fix[14])#radians
+			feature_vec.append(fix[15])#peak vel
+			feature_vec.append(fix[16])#amplitude
 
+			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7])#start coord, end coord
+			exp_idx = self.get_exp_idx(feature_vec[1:3])#start time, end time
 
+			feature_vec.append(area_start_idx)
+			feature_vec.append(area_end_idx)
+			feature_vec.append(exp_idx)
+			self.rec_fixations.append(feature_vec)
 
+		for sac in self.saccades:
+			feature_vec = []
+			feature_vec.append(1)
+			feature_list = [5,6,0,1,2,3,13,14,15,16,4,9,10]
+			for idx in feature_list:
+				feature_vec.append(sac[idx])
+			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7])
+			exp_idx = self.get_exp_idx(feature_vec[1:3])
+			feature_vec.append(area_start_idx)
+			feature_vec.append(area_end_idx)
+			feature_vec.append(exp_idx)
+			self.rec_saccades.append(feature_vec)
 
+	def get_feature_map(self):
+		'''
+		merge fixations and saccades to a np array
+		:return:
+		'''
 
 def json2np(eye_data):
 	event_list = []
