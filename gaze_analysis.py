@@ -271,6 +271,7 @@ def search_data(path, filename):
 	'''
 	result = []
 	for root, dirs, files in os.walk(path):
+		#pdb.set_trace()
 		for file in files:
 			if(file==filename):
 				file_path = os.path.join(root, file)
@@ -285,7 +286,9 @@ def get_dir_stat(path, filename):
 	:return: all features, [num_person, stat_dim]
 	'''
 	file_list = search_data(path, filename)
-	stat_array = np.array([])
+	#pdb.set_trace()
+	stat_array = np.array([[]])
+	flag = 0
 	for file_path in file_list:
 		with open(file_path, 'r') as f:
 			file = json.load(f)
@@ -294,7 +297,13 @@ def get_dir_stat(path, filename):
 		extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
 								 conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=file_path)
 		feature = extractor.stat_analysis()
-		stat_array.extend(feature)
+		#pdb.set_trace()
+		if(flag==0):
+			stat_array = np.expand_dims(np.array(feature),0)
+			flag =1
+		else:
+			stat_array = np.row_stack((stat_array,feature))
+	#pdb.set_trace()
 	return stat_array
 
 def analyze_avg_feature(stat_array):
@@ -304,10 +313,16 @@ def analyze_avg_feature(stat_array):
 
 	'''
 	df = pd.DataFrame(stat_array, columns=['gaze_duration','num_gaze','sac_peak_vel','sac_max_angle','mean_angle','num_sac'])
+	pdb.set_trace()
 	df.describe()
 
 if __name__ == '__main__':
-	with open('data/JsonData/eye_576.json', 'r') as f:
+	#data_path = 'data/result'
+	#filename = 'eye.json'
+	#stat_array = get_dir_stat(data_path, filename)
+	#analyze_avg_feature(stat_array)
+	eye_path = 'data/JsonData/eye_576.json'
+	with open(eye_path, 'r') as f:
 		file = json.load(f)
 	eye_data = file["gazePoints"]
 	gaze_points = json2np(eye_data)
@@ -328,6 +343,7 @@ if __name__ == '__main__':
 	'''
 	#gshape = gaze_points.shape
 	extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
-								conf.saccade_min_velocity, conf.max_saccade_duration)
-	extractor.analyze_fixations()
+								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
+	extractor.time_series_analysis()
+	#extractor.analyze_fixations()
 

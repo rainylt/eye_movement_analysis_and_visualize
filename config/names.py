@@ -3,7 +3,7 @@ fixations_list_labels = ['mean x', 'mean y',
                          't start', 't end',
                          'start index', 'end index',
                          #'mean diameter', 'var diameter',
-                         'mean successive angles', 'var successive angles'
+                         'mean successive angles', 'var successive angles','start_x','start_y','end_x','end_y','radians','peak_vel','amplitude'
                          ]
 fix_mean_x_i = 0
 fix_mean_y_i = 1
@@ -31,7 +31,7 @@ saccades_list_labels = ['start x', 'start y',
                         't start', 't end',
                         'start index', 'end index',
                         #'mean diameter', 'var diameter',
-                        'peak velocity', 'amplitude',
+                        'peak velocity', 'amplitude','max_angle','mean_angle','mean_x','mean_y','var_x','var_y'
                         ]
 
 sacc_start_x_i = 0
