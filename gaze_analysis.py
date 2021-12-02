@@ -168,7 +168,7 @@ class gazeAnalysis (object):
 				feature_map.row_stack((feature_map,self.rec_fixations[ga_idx]))
 				ga_idx += 1
 		return feature_map
-	
+
 def json2np(eye_data):
 	event_list = []
 	frame_idx = 0

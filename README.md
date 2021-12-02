@@ -19,5 +19,8 @@ change config in `ploter.py` and
 ```
 python ploter.py
 ```
+to get eye movement visualized
+
+or modify the main function in `gaze_analysis.py` to get feature map from eye movement track. 
 # Reference
 - [eye-movements-predict-personality](https://github.com/sarikayamehmet/eye-movements-predict-personality)
