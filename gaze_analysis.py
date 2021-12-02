@@ -147,9 +147,28 @@ class gazeAnalysis (object):
 	def get_feature_map(self):
 		'''
 		merge fixations and saccades to a np array
-		:return:
+		:return: feature map (numpy array)
 		'''
-
+		feature_map = np.array([[]])
+		ga_idx = 0
+		sac_idx = 0
+		while(ga_idx<len(self.rec_fixations) and sac_idx<len(self.rec_saccades)):
+			if(self.rec_fixations[ga_idx][1]<self.rec_saccades[sac_idx][1]):
+				feature_map.row_stack((feature_map,self.rec_fixations[ga_idx]))
+				ga_idx += 1
+			else:
+				feature_map.row_stack((feature_map,self.rec_saccades[sac_idx]))
+				sac_idx += 1
+		if(ga_idx==len(self.rec_fixations)):
+			while(sac_idx<len(self.rec_saccades)):
+				feature_map.row_stack((feature_map,self.rec_saccades[sac_idx]))
+				sac_idx += 1
+		else:
+			while(ga_idx<len(self.rec_fixations)):
+				feature_map.row_stack((feature_map,self.rec_fixations[ga_idx]))
+				ga_idx += 1
+		return feature_map
+	
 def json2np(eye_data):
 	event_list = []
 	frame_idx = 0
