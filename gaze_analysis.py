@@ -7,12 +7,14 @@ from config import names as gs
 from config import conf
 import json
 import matplotlib.pyplot as plt
+
+from datetime import datetime
 import pdb
 
 
-class gazeAnalysis (object):
-	def __init__(self, gaze, fixation_radius_threshold, fixation_duration_threshold, saccade_min_velocity,max_saccade_duration,
-					event_strings=None, ti=0, xi=1, yi=2):
+class gazeAnalysis(object):
+	def __init__(self, gaze, fixation_radius_threshold, fixation_duration_threshold, saccade_min_velocity,max_saccade_duration,eye_path,
+					event_strings=None, ti=0, xi=1, yi=2, ):
 		assert gaze.size > 0
 
 		# save data in instance
@@ -26,6 +28,8 @@ class gazeAnalysis (object):
 		self.yi = yi
 		self.ti = ti
 
+		self.eye_path = eye_path
+		self.result_path = os.path.join(os.path.dirname(eye_path),'result.json')
 		# detect errors, fixations, saccades and blinks
 		self.errors = self.detect_errors()
 		self.fixations, self.saccades, self.wordbook_string = \
@@ -104,6 +108,21 @@ class gazeAnalysis (object):
 		plt.savefig('output/saccade_analysis.png')
 
 	def reconstruct_feature(self):
+		'''
+		0 类别
+		1 开始时间
+		2 结束时间
+		3-4 开始坐标
+		5-6 结束坐标
+		7-8 坐标均值
+		9-10 坐标方差
+		11 radians
+		12 峰值速度
+		13 振幅
+		14-15 区域移动序列
+		16 实验序号
+		:return:
+		'''
 		self.rec_fixations = []
 		self.rec_saccades = []
 		for fix in self.fixations:
@@ -123,8 +142,9 @@ class gazeAnalysis (object):
 			feature_vec.append(fix[15])#peak vel
 			feature_vec.append(fix[16])#amplitude
 
-			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7])#start coord, end coord
-			exp_idx = self.get_exp_idx(feature_vec[1:3])#start time, end time
+			exp_idx = self.get_exp_idx(feature_vec[1:3])  # start time, end time
+			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7], exp_idx)#start coord, end coord
+
 
 			feature_vec.append(area_start_idx)
 			feature_vec.append(area_end_idx)
@@ -143,6 +163,62 @@ class gazeAnalysis (object):
 			feature_vec.append(area_end_idx)
 			feature_vec.append(exp_idx)
 			self.rec_saccades.append(feature_vec)
+
+
+	def get_exp_idx(self, time_vec):
+		'''
+		根据result.json找到各阶段时间
+		根据event时间判断在哪个experiment
+		:param time_vec:
+		:return:
+		'''
+		def get_rel_time(time_str_base, time_str):
+			return (datetime.strftime(time_str,'%H:%M:%S')-datetime.strftime(time_str_base,'%H:%M:%S')).seconds
+		with open(self.eye_path, 'r') as f:
+			eye_data = json.load(f)
+		base_time = eye_data['eyeStartTime'].split(' ')[1]
+
+		with open(self.result_path, 'r') as f:
+			result = json.load(f)
+		times = result['times']
+		stroop1_start = get_rel_time(times['StroopTest_P1 Start'].split(' ')[1], base_time)
+		#stroop1_end = get_rel_time(times['StroopTest_P1 Finish'].split(' ')[1], base_time)
+		stroop2_start = get_rel_time(times['StroopTest_P2 Start'].split(' ')[1], base_time)
+		#stroop2_end = get_rel_time(times['StroopTest_P2 Finish'].split(' ')[1], base_time)
+		stroop3_start = get_rel_time(times['StroopTest_P3 Start'].split(' ')[1], base_time)
+		#stroop3_end = get_rel_time(times['StroopTest_P3 Finish'].split(' ')[1], base_time)
+		stroop4_start = get_rel_time(times['StroopTest_P4 Start'].split(' ')[1], base_time)
+		#stroop4_end = get_rel_time(times['StroopTest_P4 Finish'].split(' ')[1], base_time)
+
+		wcst_start = get_rel_time(times['WCST Start'].split(' ')[1], base_time)
+		#wcst_end = get_rel_time(times['WCST Finish'].split(' ')[1], base_time)
+
+		expression_start = get_rel_time(times['Expression Start'].split(' ')[1], base_time)
+		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
+		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
+		for i in range(len(time_list)-1):
+			if(time_vec[0]>time_list[i] and time_vec[0]<time_list[i+1]):
+				return i
+
+	def get_area_idx(self, coord_vec, exp_idx):
+		def search_bbox(bbox_list, coord_vec):
+			for id,bbox in bbox_list.items():
+				if(bbox[2]>=coord_vec[0]>=bbox[0] and bbox[3]>=coord_vec[1]>=bbox[1]):
+					start_area = id
+				if (bbox[2] >= coord_vec[2] >= bbox[0] and bbox[3] >= coord_vec[3] >= bbox[1]):
+					end_area = id
+			return start_area, end_area
+		if(exp_idx<=3):
+			bbox_list = {'A':[192,117,522,440],'B':[772,70,992,190],'C':[772,208,992,328],'D':[772,345,992,466],'E':[772,484,992,604]}
+			return search_bbox(bbox_list, coord_vec)
+		if(exp_idx==4):
+			bbox_list = {'A':[484,0,616,65],'B':[0,66,229,229],'C':[229,66,532,229],'D':[532,66,837,229],'E':[839,66,1102,229],
+						 'F':[0,326,222,450],'G':[370,278,733,549],'H':[511,571,593,597],'I':[821,377,1010,450]}
+			return search_bbox(bbox_list, coord_vec)
+		if(exp_idx==5):
+			bbox_list = {'A': [137,139,698,550], 'B': [723,139,885,255], 'C': [916,139,1081,255], 'D': [723,288,995,402],
+						 'E': [916,288,1081,402], 'F': [723,435,885,551], 'G': [916,435,1081,551]}
+			return search_bbox(bbox_list, coord_vec)
 
 	def get_feature_map(self):
 		'''
@@ -211,12 +287,12 @@ def get_dir_stat(path, filename):
 	file_list = search_data(path, filename)
 	stat_array = np.array([])
 	for file_path in file_list:
-		with open(file, 'r') as f:
+		with open(file_path, 'r') as f:
 			file = json.load(f)
 		eye_data = file["gazePoints"]
 		gaze_points = json2np(eye_data)
 		extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
-								 conf.saccade_min_velocity, conf.max_saccade_duration)
+								 conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=file_path)
 		feature = extractor.stat_analysis()
 		stat_array.extend(feature)
 	return stat_array
