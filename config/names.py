@@ -13,10 +13,17 @@ fix_start_t_i = 4
 fix_end_t_i = 5
 fix_start_index_i = 6
 fix_end_index_i = 7
-fix_mean_diam_i = 8
-fix_var_diam_i = 9
-fix_mean_succ_angles = 10
-fix_var_succ_angles = 11
+#fix_mean_diam_i = 8
+#fix_var_diam_i = 9
+fix_mean_succ_angles = 8
+fix_var_succ_angles = 9
+fix_start_x = 10
+fix_start_y = 11
+fix_end_x = 12
+fix_end_y = 13
+fix_radians = 14
+fix_peak_vel = 15
+fix_amplitude = 16
 
 saccades_list_labels = ['start x', 'start y',
                         'end x', 'end y',
@@ -36,10 +43,16 @@ sacc_t_start_i = 5
 sacc_t_end_i = 6
 sacc_start_index_i = 7
 sacc_end_index_i = 8
-sacc_mean_diam_i = 9
-sacc_var_diam_i = 10
-sacc_peak_vel_i = 11
-sacc_amplitude_i = 12
+#sacc_mean_diam_i = 9
+#sacc_var_diam_i = 10
+sacc_peak_vel_i = 9
+sacc_amplitude_i = 10
+sacc_max_angle = 11
+sacc_mean_angle = 12
+sacc_mean_x = 13
+sacc_mean_y = 14
+sacc_var_x = 15
+sacc_var_y = 16
 
 blink_list_labels = ['t start', 't end', 'start index', 'end index']
 

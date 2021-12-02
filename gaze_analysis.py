@@ -103,6 +103,9 @@ class gazeAnalysis (object):
 		#plt.ylabel('')
 		plt.savefig('output/saccade_analysis.png')
 
+	def reconstruct_feature(self):
+		for fix in self.fixations:
+			exp_idx = self.get_exp_idx
 
 
 

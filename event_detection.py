@@ -88,8 +88,45 @@ def get_fixation_list(gaze, errors, xi, yi, ti, fixation_radius_threshold, fixat
 				succ_dy = gazey[1:] - gazey[:-1]
 				succ_angles = np.arctan2(succ_dy, succ_dx)
 
-				fixation.append(np.mean(succ_angles))  # 10 mean successive angle
-				fixation.append(np.var(succ_angles))  # 11 var successive angle
+				fixation.append(np.mean(succ_angles))  # 8 mean successive angle
+				fixation.append(np.var(succ_angles))  # 9 var successive angle
+
+				#extra feature
+				start_x = gazex[0]
+				end_x = gazex[-1]
+				start_y = gazey[0]
+				end_y = gazey[-1]
+				fixation.append(start_x)#10
+				fixation.append(end_x)#11
+				fixation.append(start_y)#12
+				fixation.append(end_y)#13
+				all_dx = end_x-start_x
+				all_dy = end_y-start_y
+				amplitude = np.linalg.norm([all_dx, all_dy])
+
+				if all_dx == 0:
+					radians = 0
+				else:
+					radians = np.arctan(np.true_divide(all_dy, all_dx))
+
+				if all_dx > 0:
+					if all_dy < 0:
+						radians += (2 * np.pi)
+				else:
+					radians = np.pi + radians
+
+				dx = np.abs(gazex[1:] - gazex[:-1])
+				dy = np.abs(gazey[1:] - gazey[:-1])
+				dt = np.abs(gazet[1:] - gazet[:-1])
+
+				distance = np.linalg.norm([dx, dy])
+				peak_velocity = np.amax(distance / dt)
+
+				fixation.append(radians)#14
+				fixation.append(peak_velocity)#15
+				fixation.append(amplitude)#16
+
+
 				fixations.append(fixation)
 				assert len(fixation) == len(gs.fixations_list_labels)
 
@@ -206,12 +243,18 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			                                                       #2]) / 2.0
 			#saccade.append(np.mean(ds))  # 9. mean pupil diameter
 			#saccade.append(np.var(ds))  # 10. var pupil diameter
-			saccade.append(peak_velocity)  # 11. peak velocity
+			saccade.append(peak_velocity)  # 9. peak velocity
 
-			saccade.append(amplitude)  # 12. amplitude
-
+			saccade.append(amplitude)  # 10. amplitude
+			# extra feautre
 			saccades.append(max_angle)#11
 			saccades.append(mean_angle)#12
+
+			saccades.append(np.mean(gazex))#13 mean gaze_x
+			saccades.append(np.mean(gazey))#14 mean gaze_y
+
+			saccades.append(np.var(gazex))#15 var gaze_x
+			saccades.append(np.var(gazey))#16 var gaze_y
 
 			# append character representing this kind of saccade to the wordbook_string which will be used for n-gram features
 			sac_id = get_dictionary_entry_for_saccade(amplitude, fixation_radius_threshold, radians)
