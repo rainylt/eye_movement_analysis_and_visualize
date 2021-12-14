@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime
 import pdb
+from tqdm import tqdm
 
 
 class gazeAnalysis(object):
@@ -37,6 +38,7 @@ class gazeAnalysis(object):
 							event_strings=event_strings, fixation_duration_threshold=fixation_duration_threshold,
 							fixation_radius_threshold=fixation_radius_threshold, saccade_min_velocity=saccade_min_velocity,
 							max_saccade_duration=max_saccade_duration)
+		print('event extracting finished!')
 
 	def detect_errors(self, outlier_threshold=0.5):
 		"""
@@ -128,7 +130,7 @@ class gazeAnalysis(object):
 		'''
 		self.rec_fixations = []
 		self.rec_saccades = []
-		for fix in self.fixations:
+		for fix in tqdm(self.fixations):
 			feature_vec = []
 			feature_vec.append(0)#fixation cls label
 			#feature_vec.append(fix[4])#start time
@@ -146,27 +148,38 @@ class gazeAnalysis(object):
 			feature_vec.append(fix[15])#peak vel
 			feature_vec.append(fix[16])#amplitude
 
-			exp_idx = self.get_exp_idx(feature_vec[1:3])  # start time, end time
-			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7], exp_idx)#start coord, end coord
+			exp_idx = self.get_exp_idx([fix[4], fix[5]])  # start time, end time
+			if(exp_idx != -1):
+				area_start_idx, area_end_idx = self.get_area_idx(feature_vec[2:6], exp_idx)#start coord, end coord
+			else:
+				area_start_idx, area_end_idx = -1, -1
 
 
 			feature_vec.append(area_start_idx)
 			feature_vec.append(area_end_idx)
 			feature_vec.append(exp_idx)
 			self.rec_fixations.append(feature_vec)
-
-		for sac in self.saccades:
+			#print(len(self.rec_fixations))
+		print('fixitions reconstructing finished!')
+		for sac in tqdm(self.saccades):
 			feature_vec = []
 			feature_vec.append(1)
-			feature_list = [5,6,0,1,2,3,13,14,15,16,4,9,10]
+			feature_vec.append(sac[6]-sac[5])
+			feature_list = [0,1,2,3,13,14,15,16,4,9,10]
 			for idx in feature_list:
 				feature_vec.append(sac[idx])
-			area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7])
-			exp_idx = self.get_exp_idx(feature_vec[1:3])
+
+			exp_idx = self.get_exp_idx([sac[5],sac[6]])
+			if (exp_idx != -1):
+				area_start_idx, area_end_idx = self.get_area_idx(feature_vec[2:6])
+			else:
+				area_start_idx, area_end_idx = -1, -1
 			feature_vec.append(area_start_idx)
 			feature_vec.append(area_end_idx)
 			feature_vec.append(exp_idx)
 			self.rec_saccades.append(feature_vec)
+
+		print('saccades reconstructing finished!')
 
 
 	def get_exp_idx(self, time_vec):
@@ -177,12 +190,12 @@ class gazeAnalysis(object):
 		:return:
 		'''
 		def get_rel_time(time_str_base, time_str):
-			return (datetime.strftime(time_str,'%H:%M:%S')-datetime.strftime(time_str_base,'%H:%M:%S')).seconds
+			return (datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
 		with open(self.eye_path, 'r') as f:
 			eye_data = json.load(f)
 		base_time = eye_data['eyeStartTime'].split(' ')[1]
 
-		with open(self.result_path, 'r') as f:
+		with open(self.result_path, 'r',encoding='utf-8') as f:
 			result = json.load(f)
 		times = result['times']
 		stroop1_start = get_rel_time(times['StroopTest_P1 Start'].split(' ')[1], base_time)
@@ -201,11 +214,13 @@ class gazeAnalysis(object):
 		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
 		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
 		for i in range(len(time_list)-1):
-			if(time_vec[0]>time_list[i] and time_vec[0]<time_list[i+1]):
+			if(time_vec[0]>time_list[i] and time_vec[1]<time_list[i+1]):
 				return i
-
+		return -1#不在范围内id就为-1
 	def get_area_idx(self, coord_vec, exp_idx):
 		def search_bbox(bbox_list, coord_vec):
+			start_area = 0# background
+			end_area = 0
 			for id,bbox in bbox_list.items():
 				if(bbox[2]>=coord_vec[0]>=bbox[0] and bbox[3]>=coord_vec[1]>=bbox[1]):
 					start_area = id
@@ -233,6 +248,8 @@ class gazeAnalysis(object):
 		feature_map = np.array([[]])
 		ga_idx = 0
 		sac_idx = 0
+		self.reconstruct_feature()
+		print("feature reconstructing finished!")
 		while(ga_idx<len(self.rec_fixations) and sac_idx<len(self.rec_saccades)):
 			if(self.rec_fixations[ga_idx][1]<self.rec_saccades[sac_idx][1]):
 				feature_map.row_stack((feature_map,self.rec_fixations[ga_idx]))
@@ -349,6 +366,7 @@ if __name__ == '__main__':
 	#gshape = gaze_points.shape
 	extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
 								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
-	extractor.time_series_analysis()
+	#extractor.time_series_analysis()
 	#extractor.analyze_fixations()
+	feautre_map = extractor.get_feature_map()
 
