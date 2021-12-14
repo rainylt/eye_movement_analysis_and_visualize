@@ -111,17 +111,19 @@ class gazeAnalysis(object):
 	def reconstruct_feature(self):
 		'''
 		0 类别
-		1 开始时间
-		2 结束时间
-		3-4 开始坐标
-		5-6 结束坐标
-		7-8 坐标均值
-		9-10 坐标方差
-		11 radians
-		12 峰值速度
-		13 振幅
-		14-15 区域移动序列
-		16 实验序号
+		#1 开始时间
+		#2 结束时间（是否用duration更好？）
+		1 duration
+		2-3 开始坐标
+		4-5 结束坐标
+		6-7 坐标均值
+		8-9 坐标方差
+		10 radians
+		11 峰值速度
+		12 振幅
+		13 开始区域
+		14 结束区域
+		15 实验序号
 		:return:
 		'''
 		self.rec_fixations = []
@@ -129,8 +131,9 @@ class gazeAnalysis(object):
 		for fix in self.fixations:
 			feature_vec = []
 			feature_vec.append(0)#fixation cls label
-			feature_vec.append(fix[4])#start time
-			feature_vec.append(fix[5])#end time
+			#feature_vec.append(fix[4])#start time
+			#feature_vec.append(fix[5])#end time
+			feature_vec.append(fix[5]-fix[4])#duration
 			feature_vec.append(fix[10])
 			feature_vec.append(fix[11])
 			feature_vec.append(fix[12])
@@ -210,20 +213,21 @@ class gazeAnalysis(object):
 					end_area = id
 			return start_area, end_area
 		if(exp_idx<=3):
-			bbox_list = {'A':[192,117,522,440],'B':[772,70,992,190],'C':[772,208,992,328],'D':[772,345,992,466],'E':[772,484,992,604]}
+			bbox_list = {1:[192,117,522,440],2:[772,70,992,190],3:[772,208,992,328],4:[772,345,992,466],5:[772,484,992,604]}
 			return search_bbox(bbox_list, coord_vec)
 		if(exp_idx==4):
-			bbox_list = {'A':[484,0,616,65],'B':[0,66,229,229],'C':[229,66,532,229],'D':[532,66,837,229],'E':[839,66,1102,229],
-						 'F':[0,326,222,450],'G':[370,278,733,549],'H':[511,571,593,597],'I':[821,377,1010,450]}
+			bbox_list = {1:[484,0,616,65],2:[0,66,229,229],3:[229,66,532,229],4:[532,66,837,229],5:[839,66,1102,229],
+						 6:[0,326,222,450],7:[370,278,733,549],8:[511,571,593,597],9:[821,377,1010,450]}
 			return search_bbox(bbox_list, coord_vec)
 		if(exp_idx==5):
-			bbox_list = {'A': [137,139,698,550], 'B': [723,139,885,255], 'C': [916,139,1081,255], 'D': [723,288,995,402],
-						 'E': [916,288,1081,402], 'F': [723,435,885,551], 'G': [916,435,1081,551]}
+			bbox_list = {1: [137,139,698,550], 2: [723,139,885,255], 3: [916,139,1081,255], 4: [723,288,995,402],
+						 5: [916,288,1081,402], 6: [723,435,885,551], 7: [916,435,1081,551]}
 			return search_bbox(bbox_list, coord_vec)
 
 	def get_feature_map(self):
 		'''
-		merge fixations and saccades to a np array
+		1、translate index feature to one hot feautre
+		2、merge fixations and saccades to a np array
 		:return: feature map (numpy array)
 		'''
 		feature_map = np.array([[]])
