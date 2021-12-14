@@ -99,11 +99,12 @@ class gazeAnalysis(object):
 		y_vel = [x[9] for x in self.saccades]
 		y_max_angle = [x[11] for x in self.saccades]
 		y_mean_angle = [x[12] for x in self.saccades]
-		plt.plot(x_timeline, y_vel, 'o-',label='vel')
-		plt.plot(x_timeline, y_max_angle,'o-', label = 'max_angle')
-		plt.plot(x_timeline, y_mean_angle, 'o-',label = 'mean_angle')
+		#plt.plot(x_timeline, y_vel, '-',label='vel')
+		plt.plot(x_timeline, y_max_angle,'-', label = 'max_angle')
+		#plt.plot(x_timeline, y_mean_angle, 'o',label = 'mean_angle')
 		plt.title('saccade event indicator analysis')
 		plt.xlabel('event index')
+		plt.legend()
 		#plt.ylabel('')
 		plt.savefig('output/saccade_analysis.png')
 
