@@ -121,26 +121,26 @@ class gazeAnalysis(object):
 	def reconstruct_feature(self):
 		'''
 		0 类别
-		#1 开始时间
-		#2 结束时间（是否用duration更好？）
-		1 duration
-		2-3 开始坐标
-		4-5 结束坐标
-		6-7 坐标均值
-		8-9 坐标方差
-		10 radians
-		11 峰值速度
-		12 振幅
-		13 开始区域
-		14 结束区域
-		15 实验序号
+		1 开始时间
+		2 结束时间（是否用duration更好？）
+		#1 duration
+		3-4 开始坐标
+		5-6 结束坐标
+		7-8 坐标均值
+		9-10 坐标方差
+		11 radians
+		12 峰值速度
+		13 振幅
+		14 开始区域
+		15 结束区域
+		16 实验序号
 		:return:
 		'''
 		self.rec_fixations = []
 		self.rec_saccades = []
 		for fix in tqdm(self.fixations):
 			feature_vec = []
-			feature_vec.append(0)#fixation cls label
+			feature_vec.append(0)#fixation cls label (need one hot)
 			feature_vec.append(fix[4])#start time
 			feature_vec.append(fix[5])#end time
 			#feature_vec.append(fix[5]-fix[4])#duration
@@ -163,9 +163,9 @@ class gazeAnalysis(object):
 				area_start_idx, area_end_idx = -1, -1
 
 
-			feature_vec.append(area_start_idx)
-			feature_vec.append(area_end_idx)
-			feature_vec.append(exp_idx)
+			feature_vec.append(area_start_idx)#(need one hot)
+			feature_vec.append(area_end_idx)#(need one hot)
+			feature_vec.append(exp_idx)#(need one hot)
 			self.rec_fixations.append(feature_vec)
 		print('fixitions reconstructing finished!')
 		for sac in tqdm(self.saccades):
@@ -391,4 +391,5 @@ if __name__ == '__main__':
 	#extractor.time_series_analysis()
 	#extractor.analyze_fixations()
 	feautre_map = extractor.get_feature_map()
+	print(feautre_map.shape)
 
