@@ -52,7 +52,7 @@ def train():
                 writer.add_scalar("acc/dev", dev_acc, iterations)
                 model.train()
             iterations += 1
-            if iterations - last_improve > 1000:
+            if iterations - last_improve > 100:
                 print("No optimization for a long time, auto-stopping...")
                 flag = True
                 break
