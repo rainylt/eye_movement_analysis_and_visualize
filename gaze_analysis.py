@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pdb
 from tqdm import tqdm
+import re
 
 
 class gazeAnalysis(object):
@@ -33,7 +34,10 @@ class gazeAnalysis(object):
 		self.result_path = os.path.join(os.path.dirname(eye_path),'result.json')
 		with open(self.eye_path, 'r') as f:
 			eye_data = json.load(f)
-		self.base_time = eye_data['eyeStartTime'].split(' ')[1]
+		try:
+			self.base_time = eye_data['eyeStartTime'].split(' ')[1]
+		except:#early formats
+			self.base_time = ret = re.search('T(.*?)\.',eye_data['eyeStartTime']).group()[1:-1]
 		with open(self.result_path, 'r',encoding='utf-8') as f:
 			result = json.load(f)
 		self.result_times = result['times']
@@ -203,6 +207,9 @@ class gazeAnalysis(object):
 			return (datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
 		base_time = self.base_time
 		times = self.result_times
+		#if('StroopTest_P1 Start' not in times.keys()):
+			#print('Key Error!')
+			#print(self.eye_path)
 
 		stroop1_start = get_rel_time(times['StroopTest_P1 Start'].split(' ')[1], base_time)
 		#stroop1_end = get_rel_time(times['StroopTest_P1 Finish'].split(' ')[1], base_time)
@@ -217,6 +224,8 @@ class gazeAnalysis(object):
 		#wcst_end = get_rel_time(times['WCST Finish'].split(' ')[1], base_time)
 
 		expression_start = get_rel_time(times['Expression Start'].split(' ')[1], base_time)
+		#if('Expression Finish' not in times.keys()):
+			#print(self.eye_path)
 		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
 		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
 		for i in range(len(time_list)-1):

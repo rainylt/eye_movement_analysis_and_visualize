@@ -9,7 +9,7 @@ class EyeDataset(Dataset):
         self.label_list = []
         with open(label_path, 'r') as f:
             for line in f.readlines():
-                self.label_list.append(line)
+                self.label_list.append(int(line.strip('\n')))
 
     def __getitem__(self, index):
         return self.all_data[index], self.label_list[index]
