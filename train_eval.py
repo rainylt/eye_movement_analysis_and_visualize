@@ -1,7 +1,7 @@
 import numpy as np
 import time
 import torch
-from model.classfier import Config, Model
+from model.classfier import Config, Model, pad_collate
 from model.dataset import EyeDataset
 from torch.utils.data import Dataset, DataLoader
 from tensorboardX import SummaryWriter
@@ -13,8 +13,8 @@ def train():
     config = Config()
     train_dataset = EyeDataset('data/all_data/train_data.npy','data/all_data/train_label.txt')
     val_dataset = EyeDataset('data/all_data/val_data.npy','data/all_data/val_label.txt')
-    train_loader = DataLoader(train_dataset, batch_size = config.batch_size, shuffle = True)
-    val_loader = DataLoader(val_dataset, batch_size = config.batch_size, shuffle = True)
+    train_loader = DataLoader(train_dataset, batch_size = config.batch_size, collate_fn=pad_collate(),shuffle = True)
+    val_loader = DataLoader(val_dataset, batch_size = config.batch_size,collate_fn=pad_collate(), shuffle = True)
 
     model = Model(config)
     model.train()
