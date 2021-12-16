@@ -11,7 +11,7 @@ class Config(object):
         self.num_classes = 2
         self.num_layers = 2
         self.hidden_size = 128
-        self.learning_rate = 1e-3
+        self.learning_rate = 1e-4
         self.batch_size = 10
         self.num_epochs = 100
         self.save_path = 'output/save_dict/saved_model.ckpt'
@@ -27,7 +27,7 @@ class Model(nn.Module):
         self.init_weights()
 
     def forward(self, x):
-        out = self.embedding(x)
+        out = self.embedding(x.to(torch.float32))
         out, _ = self.lstm(out)
         out = self.fc(out[:, -1,:])#最后时刻的hidden state
         return out

@@ -35,7 +35,7 @@ def train():
             loss = F.cross_entropy(outputs, labels)
             loss.backward()
             optimizer.step()
-            if(iterations%100==0):
+            if(iterations%10==0):
                 true_label = labels.data.cpu()
                 predic = torch.max(outputs.data,dim=1)[1].cpu()
                 train_acc = metrics.accuracy_score(true_label, predic)
