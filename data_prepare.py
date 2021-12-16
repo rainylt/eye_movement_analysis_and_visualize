@@ -85,12 +85,16 @@ def make_one_hot(arr):
     return np.arange(max_one+1)==arr[:,None].astype(np.integer)
 def process_feat(feature):
     '''
+    delete feature not in experiments
     norm and encode feature
     norm index:0,14,15,16
     :param original feature:
     :return: array
     '''
+    #delete feature not in  exp
+    feature = feature[feature[:,-1]!=-1]
     #get the middle feature
+    #pdb.set_trace()
     mid_feat = feature[:,1:14]
     #norm middle feature
     mid_normed_feat = mid_feat/mid_feat.max(axis=0)
@@ -100,7 +104,8 @@ def process_feat(feature):
     end_area = make_one_hot(feature[:,15])
     exp_idx = make_one_hot(feature[:,16])
     #pdb.set_trace()
-    result = np.hstack((event_cls,mid_normed_feat,begin_area,end_area,exp_idx))
+    result = np.hstack((event_cls,mid_normed_feat,begin_area,end_area,exp_idx))#(num_event,23)
+    #pdb.set_trace()
     return result
 
 if __name__ == '__main__':

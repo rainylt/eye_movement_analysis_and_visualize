@@ -184,7 +184,7 @@ class gazeAnalysis(object):
 
 			exp_idx = self.get_exp_idx(feature_vec[1:3])
 			if (exp_idx != -1):
-				area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7])
+				area_start_idx, area_end_idx = self.get_area_idx(feature_vec[3:7],exp_idx)
 			else:
 				area_start_idx, area_end_idx = -1, -1
 			feature_vec.append(area_start_idx)
@@ -203,8 +203,12 @@ class gazeAnalysis(object):
 		:param time_vec:
 		:return:
 		'''
-		def get_rel_time(time_str_base, time_str):
-			return (datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
+		def get_rel_time(time_str,time_str_base):
+			base_time = datetime.strptime(time_str_base,'%H:%M:%S')
+			now_time = datetime.strptime(time_str,'%H:%M:%S')
+			dur = (now_time-base_time).seconds
+			#pdb.set_trace()
+			return dur#(datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
 		base_time = self.base_time
 		times = self.result_times
 		#if('StroopTest_P1 Start' not in times.keys()):
@@ -228,6 +232,7 @@ class gazeAnalysis(object):
 			#print(self.eye_path)
 		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
 		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
+		#pdb.set_trace()
 		for i in range(len(time_list)-1):
 			if(time_vec[0]>time_list[i] and time_vec[1]<time_list[i+1]):
 				return i

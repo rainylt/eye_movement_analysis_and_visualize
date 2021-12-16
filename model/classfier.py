@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class Config(object):
     def __init__(self):
-        self.input_dim =30
+        self.input_dim =23
         self.embed = 30
         self.dropout = 0.5
         self.num_classes = 2
