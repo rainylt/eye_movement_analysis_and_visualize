@@ -4,6 +4,7 @@ import json
 import random
 from gaze_analysis import gazeAnalysis, json2np, search_data
 from config import conf
+from tqdm import tqdm
 import pdb
 '''
 1、get all the json file and use gaze_analysis.py to get the feature map
@@ -21,8 +22,10 @@ def make_data(root,ab_dir,norm_dir):
     normal_list = search_data(os.path.join(root, norm_dir),'eye.json')
     #get feautre
     norm_feat_list = get_feature_list(normal_list)
+    print('Normal feature extracted!')
     #pdb.set_trace()
     ab_feat_list = get_feature_list(abnormal_list)
+    print('Abnormal feature extracted!')
     #pdb.set_trace()
     #data concat
     all_feat_list = ab_feat_list+norm_feat_list#.extend(norm_feat_list)
@@ -54,10 +57,11 @@ def make_data(root,ab_dir,norm_dir):
     with open(os.path.join(root,'val_label.txt'),'w') as f:
         for v in val_label_list:
             f.write(str(v))
+    print('Data making finished!')
 
 def get_feature_list(file_list):
     result = []
-    for file_path in file_list:
+    for file_path in tqdm(file_list):
         with open(file_path, 'r') as f:
             file = json.load(f)
         eye_data = file["gazePoints"]
@@ -75,6 +79,9 @@ def get_feature_list(file_list):
         extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
                                  conf.saccade_min_velocity, conf.max_saccade_duration, eye_path=file_path)
         feature = extractor.get_feature_map()
+        if(len(feature[feature[:, -1] != -1])==0):#有效event数量为0
+            print('error gaze points: '+file_path)
+            continue
         feature = process_feat(feature)#norm and encode feature
         result.append(feature)
     return result
@@ -97,7 +104,9 @@ def process_feat(feature):
     #pdb.set_trace()
     mid_feat = feature[:,1:14]
     #norm middle feature
+
     mid_normed_feat = mid_feat/mid_feat.max(axis=0)
+
     #one-hot other feature
     event_cls = make_one_hot(feature[:,0])
     begin_area = make_one_hot(feature[:,14])

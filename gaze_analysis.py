@@ -50,7 +50,7 @@ class gazeAnalysis(object):
 							max_saccade_duration=max_saccade_duration)
 
 
-		print('event extracting finished!')
+		#print('event extracting finished!')
 
 	def detect_errors(self, outlier_threshold=0.5):
 		"""
@@ -142,7 +142,7 @@ class gazeAnalysis(object):
 		'''
 		self.rec_fixations = []
 		self.rec_saccades = []
-		for fix in tqdm(self.fixations):
+		for fix in self.fixations:
 			feature_vec = []
 			feature_vec.append(0)#fixation cls label (need one hot)
 			feature_vec.append(fix[4])#start time
@@ -171,8 +171,8 @@ class gazeAnalysis(object):
 			feature_vec.append(area_end_idx)#(need one hot)
 			feature_vec.append(exp_idx)#(need one hot)
 			self.rec_fixations.append(feature_vec)
-		print('fixitions reconstructing finished!')
-		for sac in tqdm(self.saccades):
+		#print('fixitions reconstructing finished!')
+		for sac in self.saccades:
 			feature_vec = []
 			feature_vec.append(1)
 			#feature_vec.append(sac[5])
@@ -193,7 +193,7 @@ class gazeAnalysis(object):
 			self.rec_saccades.append(feature_vec)
 		#print(len(self.rec_fixations[0]))
 		#print(len(self.rec_saccades[0]))
-		print('saccades reconstructing finished!')
+		#print('saccades reconstructing finished!')
 
 
 	def get_exp_idx(self, time_vec):
@@ -270,7 +270,7 @@ class gazeAnalysis(object):
 		sac_idx = 0
 		self.reconstruct_feature()
 		feature_map = np.array([])
-		print("feature reconstructing finished!")
+		#print("feature reconstructing finished!")
 		#pdb.set_trace()
 		#for ga in self.rec_fixations:
 			#if(len(ga)!=17):

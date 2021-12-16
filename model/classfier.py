@@ -30,7 +30,6 @@ class Model(nn.Module):
         out = self.embedding(x)
         out, _ = self.lstm(out)
         out = self.fc(out[:, -1,:])#最后时刻的hidden state
-        out = F.log_softmax(out, dim=1)
         return out
 
     def init_weights(self):

@@ -37,7 +37,7 @@ def train():
             optimizer.step()
             if(iterations%100==0):
                 true_label = labels.data.cpu()
-                predic = torch.max(outputs.data,1)[1].cpu()
+                predic = torch.max(outputs.data,dim=1)[1].cpu()
                 train_acc = metrics.accuracy_score(true_label, predic)
                 dev_acc, dev_loss = eval(config, model, val_loader)
                 if dev_loss < dev_best_loss:
