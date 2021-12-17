@@ -336,7 +336,7 @@ def search_data(path, filename):
 				result.append(file_path)
 	return result
 
-def get_dir_stat(path, filename):
+def get_dir_stat(path, filename,sheet):
 	'''
 	get statistic information from all the eye.json in database
 	:param path: database path
@@ -347,14 +347,28 @@ def get_dir_stat(path, filename):
 	#pdb.set_trace()
 	stat_array = np.array([[]])
 	flag = 0
-	for file_path in file_list:
+	#read excel file
+	user_info = pd.read_excel('data/info.xlsx', sheet_name=sheet)
+	#pdb.set_trace()
+	for file_path in tqdm(file_list):
 		with open(file_path, 'r') as f:
 			file = json.load(f)
+		#get the user name
+		user = re.findall('\\\\(.*?)_',file_path)[0]
+		#get the sex and grade
+		user_line = user_info[user_info['姓名']==user]
+		sex_dict = {'男':0,'女':1}
+		sex = sex_dict[user_line.iat[0,3]]
+		grade = user_line.iat[0,2]
+		user_add = [sex, grade]
+		#pdb.set_trace()
 		eye_data = file["gazePoints"]
 		gaze_points = json2np(eye_data)
 		extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
 								 conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=file_path)
 		feature = extractor.stat_analysis()
+		#add user info
+		feature = feature+user_add
 		#pdb.set_trace()
 		if(flag==0):
 			stat_array = np.expand_dims(np.array(feature),0)
@@ -370,20 +384,26 @@ def analyze_avg_feature(stat_array):
 	num_person
 
 	'''
-	df = pd.DataFrame(stat_array, columns=['gaze_duration','num_gaze','sac_peak_vel','sac_max_angle','mean_angle','num_sac'])
-	pdb.set_trace()
+	df = pd.DataFrame(stat_array, columns=['gaze_duration','num_gaze','sac_peak_vel','sac_max_angle','mean_angle','num_sac','sex','grade'])
+	#pdb.set_trace()
 	df.describe()
+	df.groupby('sex').describe().loc[0]
+	df.groupby('sex').describe().loc[1]
+	df.groupby('grade').describe().loc[0]
+	df['gaze_duration'].groupby(df['sex']).describe()
 
 if __name__ == '__main__':
-	#data_path = 'data/result'
-	#filename = 'eye.json'
-	#stat_array = get_dir_stat(data_path, filename)
-	#analyze_avg_feature(stat_array)
+	data_path = 'data/all_data/0'
+	filename = 'eye.json'
+	stat_array = get_dir_stat(data_path, filename,'deqing')
+	analyze_avg_feature(stat_array)
+	'''
 	eye_path = 'data/JsonData/eye_576.json'
 	with open(eye_path, 'r') as f:
 		file = json.load(f)
 	eye_data = file["gazePoints"]
 	gaze_points = json2np(eye_data)
+	'''
 	'''
 	test_list = np.array([[0,0.1,0.1]])
 	#test_list = []
@@ -399,6 +419,7 @@ if __name__ == '__main__':
 	#pdb.set_trace()
 	#print(gaze_points)
 	'''
+	'''
 	#gshape = gaze_points.shape
 	extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
 								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
@@ -406,4 +427,5 @@ if __name__ == '__main__':
 	#extractor.analyze_fixations()
 	feautre_map = extractor.get_feature_map()
 	print(feautre_map.shape)
+	'''
 
