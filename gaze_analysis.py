@@ -353,12 +353,26 @@ def get_dir_stat(path, filename,sheet):
 	for file_path in tqdm(file_list):
 		with open(file_path, 'r') as f:
 			file = json.load(f)
+		result_path = os.path.join(os.path.dirname(file_path), 'result.json')
+		if not (os.path.exists(result_path)):
+			continue
+		with open(result_path, 'r', encoding='utf-8') as f:
+			result_data = json.load(f)
+		result_times = result_data['times']
+		if ('Expression Finish' not in result_times.keys() or 'StroopTest_P1 Start' not in result_times.keys()):
+			continue
 		#get the user name
 		user = re.findall('\\\\(.*?)_',file_path)[0]
 		#get the sex and grade
 		user_line = user_info[user_info['姓名']==user]
+		if(user_line.empty):#user not found
+			continue
 		sex_dict = {'男':0,'女':1}
-		sex = sex_dict[user_line.iat[0,3]]
+		try:
+			sex = sex_dict[user_line.iat[0,3]]
+		except:
+			print(user+' not found error, continue')
+			continue
 		grade = user_line.iat[0,2]
 		user_add = [sex, grade]
 		#pdb.set_trace()
@@ -385,17 +399,19 @@ def analyze_avg_feature(stat_array):
 
 	'''
 	df = pd.DataFrame(stat_array, columns=['gaze_duration','num_gaze','sac_peak_vel','sac_max_angle','mean_angle','num_sac','sex','grade'])
-	#pdb.set_trace()
+	pdb.set_trace()
 	df.describe()
+	'''
 	df.groupby('sex').describe().loc[0]
 	df.groupby('sex').describe().loc[1]
 	df.groupby('grade').describe().loc[0]
+	'''
 	df['gaze_duration'].groupby(df['sex']).describe()
 
 if __name__ == '__main__':
-	data_path = 'data/all_data/0'
+	data_path = 'data/all_data/1'
 	filename = 'eye.json'
-	stat_array = get_dir_stat(data_path, filename,'deqing')
+	stat_array = get_dir_stat(data_path, filename,'erbao')
 	analyze_avg_feature(stat_array)
 	'''
 	eye_path = 'data/JsonData/eye_576.json'

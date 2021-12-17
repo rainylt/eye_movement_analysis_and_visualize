@@ -162,10 +162,12 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 	for i in range(1, len(fixations)):
 		# ...not if the window is too long
 		duration = float(fixations[i][gs.fix_start_t_i] - fixations[i - 1][gs.fix_end_t_i])
+		#取消duration限制
+		'''
 		if duration > max_saccade_duration:
 			skip_count["duration"] += 1
 			continue
-
+		'''
 		start_index = fixations[i - 1][gs.fix_end_index_i]
 		end_index = fixations[i][gs.fix_start_index_i]
 
@@ -205,10 +207,12 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			continue
 
 		# ...not if the peak velocity is very low
+		#取消速度限制
+		'''
 		if peak_velocity < saccade_min_velocity:
 			skip_count["peak_velocity"] += 1
 			continue
-
+		'''
 
 		percentage_error = np.sum(errors[start_index:(end_index + 1)]) / float(end_index - start_index)
 		# ...not if more than 50% of the data are erroneous
@@ -266,7 +270,7 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			# assert all saccade characteristics were computed
 			#pdb.set_trace()
 			assert len(saccade) == len(gs.saccades_list_labels)
-	#print(skip_count)
+	print(skip_count)
 	return saccades, wordbook_string
 
 

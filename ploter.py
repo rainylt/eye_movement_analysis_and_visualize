@@ -173,7 +173,7 @@ class ploter(object):
 
     def get_events(self):#TODO: 得根据frame加event
         extractor = ga(self.ori_npData,conf.fixation_radius_threshold, conf.fixation_duration_threshold,
-                       conf.saccade_min_velocity, conf.max_saccade_duration)
+                       conf.saccade_min_velocity, conf.max_saccade_duration,self.eye_move_path)
         ori_gaze_events = extractor.get_gaze()
         ori_sac_events = extractor.get_sac()
         #get the event in the duration
@@ -311,7 +311,7 @@ eye_move_path = 'data/JsonData/eye_576.json'
 gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
 event_save_name = 'output/Stroop1_event.mp4'
 point_save_name = 'output/Stroop1_point.mp4'
-merge_save_name = 'output/Stroop1.mp4'
+merge_save_name = 'output/Stroop1_merged.mp4'
 #gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
 #gd image
 if __name__ == '__main__':
