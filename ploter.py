@@ -301,16 +301,16 @@ class ploter(object):
 
 event_idx = 0
 #config
-start_time = 187
+start_time = 187#秒
 end_time = 233
 start_frame = start_time*30
 end_frame = end_time*30
-img_width = 1102
+img_width = 1102#背景图
 img_height = 620
 save_frames = end_frame - start_frame
 
 eye_move_path = 'data/JsonData/eye_576.json'
-gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
+gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'#背景图
 event_save_name = 'output/Stroop1_event.mp4'
 point_save_name = 'output/Stroop1_point.mp4'
 merge_save_name = 'output/Stroop1_merged.mp4'
