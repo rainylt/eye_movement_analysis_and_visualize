@@ -233,7 +233,7 @@ class gazeAnalysis(object):
 		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
 		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
 		#pdb.set_trace()
-		for i in range(len(time_list)-1):
+		for i in range(len(time_list)-1):#i~[0,5]
 			if(time_vec[0]>time_list[i] and time_vec[1]<time_list[i+1]):
 				return i
 		return -1#不在范围内id就为-1

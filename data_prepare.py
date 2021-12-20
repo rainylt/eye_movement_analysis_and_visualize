@@ -99,22 +99,25 @@ def process_feat(feature):
     :return: array
     '''
     #delete feature not in  exp
+    pdb.set_trace()
     feature = feature[feature[:,-1]!=-1]
     #get the middle feature
     #pdb.set_trace()
-    mid_feat = feature[:,1:14]
+    mid_feat = feature[:,3:14]
+    #get duration
+    duration_feat = feature[:,2]-feature[:,1]
     #norm middle feature
 
     mid_normed_feat = mid_feat/mid_feat.max(axis=0)
 
     #one-hot other feature
     event_cls = make_one_hot(feature[:,0])
-    begin_area = make_one_hot(feature[:,14])
+    begin_area = make_one_hot(feature[:,14])#有问题 现在只有[0,-1]
     end_area = make_one_hot(feature[:,15])
     exp_idx = make_one_hot(feature[:,16])
-    #pdb.set_trace()
-    result = np.hstack((event_cls,mid_normed_feat,begin_area,end_area,exp_idx))#(num_event,23)
-    #pdb.set_trace()
+    pdb.set_trace()
+    result = np.hstack((event_cls,duration_feat,mid_normed_feat,begin_area,end_area,exp_idx))#(num_event,)
+    pdb.set_trace()
     return result
 
 if __name__ == '__main__':

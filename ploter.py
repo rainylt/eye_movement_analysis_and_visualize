@@ -156,9 +156,11 @@ class ploter(object):
         print('Draw events finished！')
 
     def get_merge_ani(self, merge_save_path):
-        self.draw_events()
-        self.draw_gazePoints()
+        #self.draw_events()
+        #self.draw_gazePoints()
+        #pdb.set_trace()
         final_clip = self.merge_ani()
+        pdb.set_trace()
         final_clip.write_videofile(merge_save_path)
         print('Merge Finished!')
 

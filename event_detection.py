@@ -270,7 +270,7 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			# assert all saccade characteristics were computed
 			#pdb.set_trace()
 			assert len(saccade) == len(gs.saccades_list_labels)
-	print(skip_count)
+	#print(skip_count)
 	return saccades, wordbook_string
 
 
