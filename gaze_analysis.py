@@ -238,6 +238,8 @@ class gazeAnalysis(object):
 				return i
 		return -1#不在范围内id就为-1
 	def get_area_idx(self, coord_vec, exp_idx):
+		#first translate the coord to match the gd img
+		coord_vec = [a*b for a,b in zip(coord_vec,[1102,620,1102,620])]
 		def search_bbox(bbox_list, coord_vec):
 			start_area = 0# background
 			end_area = 0

@@ -110,6 +110,9 @@ def process_feat(feature):
 
     mid_normed_feat = mid_feat/mid_feat.max(axis=0)
 
+    #norm duration feature
+    duration_feat = duration_feat/duration_feat.max(axis=0)
+
     #one-hot other feature
     event_cls = make_one_hot(feature[:,0])
     begin_area = make_one_hot(feature[:,14])#有问题 现在只有[0,-1]
