@@ -16,15 +16,15 @@ import pdb
 train_ratio = 0.8
 val_ratio = 0.2
 
-def make_data(root,ab_dir,norm_dir):
+def make_data(root,ab_dir,norm_dir,spec_idx=-1):
     #get file
     abnormal_list = search_data(os.path.join(root,ab_dir),'eye.json')
     normal_list = search_data(os.path.join(root, norm_dir),'eye.json')
     #get feautre
-    norm_feat_list = get_feature_list(normal_list)
+    norm_feat_list = get_feature_list(normal_list,spec_idx = spec_idx)
     print('Normal feature extracted!')
     #pdb.set_trace()
-    ab_feat_list = get_feature_list(abnormal_list)
+    ab_feat_list = get_feature_list(abnormal_list,spec_idx = spec_idx)
     print('Abnormal feature extracted!')
     #pdb.set_trace()
     #data concat
@@ -59,7 +59,7 @@ def make_data(root,ab_dir,norm_dir):
             f.write(str(v))
     print('Data making finished!')
 
-def get_feature_list(file_list):
+def get_feature_list(file_list,spec_idx=-1):
     result = []
     for file_path in tqdm(file_list):
         with open(file_path, 'r') as f:
@@ -82,7 +82,11 @@ def get_feature_list(file_list):
         if(len(feature[feature[:, -1] != -1])==0):#有效event数量为0
             print('error gaze points: '+file_path)
             continue
-        feature = process_feat(feature)#norm and encode feature
+        if (len(feature[feature[:, -1] == 0]) == 0):
+        #if(len(feature[feature:,-1]==4)==0):#WCST为0
+            print("error P1: "+file_path)
+            continue
+        feature = process_feat(feature,spec_idx=spec_idx)#norm and encode feature
         result.append(feature)
     return result
 
@@ -96,7 +100,7 @@ def make_one_hot(arr, max_idx=-1):
 
 #def get_spec_exp(exp_idx, feature):
 
-def process_feat(feature, spec_exp = -1):
+def process_feat(feature, spec_idx = -1):
     '''
     delete feature not in experiments
     norm and encode feature
@@ -108,8 +112,8 @@ def process_feat(feature, spec_exp = -1):
     #pdb.set_trace()
     feature = feature[feature[:,-1]!=-1]
 
-    if(spec_exp!=-1):#select specific exp data
-        feature = feature[feature[:,-1]==spec_exp]
+    if(spec_idx!=-1):#select specific exp data
+        feature = feature[feature[:,-1]==spec_idx]
     #get the middle feature
     #pdb.set_trace()
     mid_feat = feature[:,3:14]
@@ -124,9 +128,9 @@ def process_feat(feature, spec_exp = -1):
 
     #one-hot other feature
     event_cls = make_one_hot(feature[:,0])
-    begin_area = make_one_hot(feature[:,14],max_idx=9)#有问题 现在只有[0,-1]
+    begin_area = make_one_hot(feature[:,14],max_idx=9)
     end_area = make_one_hot(feature[:,15],max_idx=9)
-    if(spec_exp==-1):
+    if(spec_idx==-1):
         exp_idx = make_one_hot(feature[:,16],max_idx=5)
         #pdb.set_trace()
         result = np.hstack((event_cls,duration_feat,mid_normed_feat,begin_area,end_area,exp_idx))#(num_event,)
@@ -139,4 +143,4 @@ if __name__ == '__main__':
     root = 'data/all_data'
     ab_dir = '1'
     norm_dir = '0'
-    make_data(root,ab_dir,norm_dir)
+    make_data(root,ab_dir,norm_dir,spec_idx=0)
