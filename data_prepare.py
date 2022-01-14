@@ -87,8 +87,11 @@ def get_feature_list(file_list):
     return result
 
 
-def make_one_hot(arr):
-    max_one = np.max(arr)
+def make_one_hot(arr, max_idx=-1):
+    if(max_idx!=-1):
+        max_one = max_idx
+    else:
+        max_one = np.max(arr)
     return np.arange(max_one+1)==arr[:,None].astype(np.integer)
 
 #def get_spec_exp(exp_idx, feature):
@@ -121,10 +124,10 @@ def process_feat(feature, spec_exp = -1):
 
     #one-hot other feature
     event_cls = make_one_hot(feature[:,0])
-    begin_area = make_one_hot(feature[:,14])#有问题 现在只有[0,-1]
-    end_area = make_one_hot(feature[:,15])
+    begin_area = make_one_hot(feature[:,14],max_idx=9)#有问题 现在只有[0,-1]
+    end_area = make_one_hot(feature[:,15],max_idx=9)
     if(spec_exp==-1):
-        exp_idx = make_one_hot(feature[:,16])
+        exp_idx = make_one_hot(feature[:,16],max_idx=5)
         #pdb.set_trace()
         result = np.hstack((event_cls,duration_feat,mid_normed_feat,begin_area,end_area,exp_idx))#(num_event,)
     else:
