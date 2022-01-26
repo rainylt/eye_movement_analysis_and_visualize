@@ -411,6 +411,7 @@ def analyze_avg_feature(stat_array):
 	df['gaze_duration'].groupby(df['sex']).describe()
 
 if __name__ == '__main__':
+	'''
 	data_path = 'data/all_data/1'
 	filename = 'eye.json'
 	stat_array = get_dir_stat(data_path, filename,'erbao')
@@ -421,7 +422,7 @@ if __name__ == '__main__':
 		file = json.load(f)
 	eye_data = file["gazePoints"]
 	gaze_points = json2np(eye_data)
-	'''
+
 	'''
 	test_list = np.array([[0,0.1,0.1]])
 	#test_list = []
@@ -437,7 +438,7 @@ if __name__ == '__main__':
 	#pdb.set_trace()
 	#print(gaze_points)
 	'''
-	'''
+
 	#gshape = gaze_points.shape
 	extractor = gazeAnalysis(gaze_points, conf.fixation_radius_threshold, conf.fixation_duration_threshold,
 								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
@@ -445,5 +446,5 @@ if __name__ == '__main__':
 	#extractor.analyze_fixations()
 	feautre_map = extractor.get_feature_map()
 	print(feautre_map.shape)
-	'''
+
 
