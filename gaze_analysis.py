@@ -444,6 +444,7 @@ if __name__ == '__main__':
 								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
 	#extractor.time_series_analysis()
 	#extractor.analyze_fixations()
+	pdb.set_trace()
 	feautre_map = extractor.get_feature_map()
 	print(feautre_map.shape)
 

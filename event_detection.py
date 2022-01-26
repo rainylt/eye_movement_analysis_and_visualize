@@ -244,20 +244,22 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 		#遍历，如果连续N=3个点的angle都类似(差距<45°)且与之前的差距大(大于60°)，则分断点
 		#搜索断点
 		breakPoints = search_break(sac_angle,3)
-
+		'''
 		if(len(breakPoints)>0):
 			print('break')
 			pdb_flag=1
 			pdb.set_trace()
-
+		'''
 		#断点Index转化为实际index
 
-		break_index_list = [gaze_index[n] for n in breakPoints]
+		break_index_list = [gaze_index[n] for n in breakPoints]#原数据的index（没去除error前）
 		abs_break_index = [start_index + x for x in break_index_list]
 		#遍历断点，加入saccade
 		#输入：dx, dy, dt, sac_angle, gazex, gazey, start_index, end_index, errors,……
-		all_angle_index_list = [0] + break_index_list + [len(sac_angle)-1]
-		all_abs_list = [start_index]+abs_break_index+[end_index]
+		#all_angle_index_list = [0] + break_index_list + [len(sac_angle)-1]#这里应该用去除error后的index
+		all_angle_index_list = [0] + breakPoints + [len(sac_angle)-1]#这里应该用去除error后的index
+		all_abs_list = [start_index]+abs_break_index+[end_index]#这里应该用去除error前的index，即在原gaze list里的index，
+		# 但其他地方应该用之后的Index
 		for i in range(len(all_abs_list)-1):#每对index
 			tmp_start_index = all_abs_list[i]
 			tmp_end_index = all_abs_list[i+1]
@@ -273,13 +275,18 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 			tmp_dy = dy[start_angle_index:end_angle_index]
 			tmp_dt = dt[start_angle_index:end_angle_index]
 			distance = np.linalg.norm([tmp_dx, tmp_dy],axis=0)#每两个点之间的距离
-			if(pdb_flag==1):
-				pdb.set_trace()
+
+			#if(pdb_flag==1):
+			#	pdb.set_trace()
 
 			peak_velocity = np.amax(distance / tmp_dt)
 
 			start_x = gazex[start_angle_index]
-			end_x = gazex[end_angle_index]
+			try:
+				end_x = gazex[end_angle_index]
+			except:
+				pdb.set_trace()
+				print("error!")
 			start_y = gazey[start_angle_index]
 			end_y = gazey[end_angle_index]
 			all_dx = end_x - start_x
@@ -345,12 +352,12 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 				saccade.append(np.var(tmp_gazey))  # 16 var gaze_y
 
 				# append character representing this kind of saccade to the wordbook_string which will be used for n-gram features
-				#sac_id = get_dictionary_entry_for_saccade(amplitude, fixation_radius_threshold, radians)
-				#wordbook_string.append(sac_id)
-				#saccades.append(saccade)
+				sac_id = get_dictionary_entry_for_saccade(amplitude, fixation_radius_threshold, radians)
+				wordbook_string.append(sac_id)
+				saccades.append(saccade)
 
 				# assert all saccade characteristics were computed
-				pdb.set_trace()
+				#pdb.set_trace()
 				assert len(saccade) == len(gs.saccades_list_labels)
 
 
