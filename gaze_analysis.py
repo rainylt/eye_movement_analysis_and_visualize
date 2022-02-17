@@ -37,10 +37,13 @@ class gazeAnalysis(object):
 		try:
 			self.base_time = eye_data['eyeStartTime'].split(' ')[1]
 		except:#early formats
-			self.base_time = ret = re.search('T(.*?)\.',eye_data['eyeStartTime']).group()[1:-1]
+			self.base_time = re.search('T(.*?)\.',eye_data['eyeStartTime']).group()[1:-1]
 		with open(self.result_path, 'r',encoding='utf-8') as f:
 			result = json.load(f)
+		self.result_data = result
 		self.result_times = result['times']
+
+		self.exp_time_list = []#初始化每个exp的时间，在get_exp_idx()里得到
 		# detect errors, fixations, saccades and blinks
 		self.errors = self.detect_errors()
 		self.fixations, self.saccades, self.wordbook_string = \
@@ -48,9 +51,73 @@ class gazeAnalysis(object):
 							event_strings=event_strings, fixation_duration_threshold=fixation_duration_threshold,
 							fixation_radius_threshold=fixation_radius_threshold, saccade_min_velocity=saccade_min_velocity,
 							max_saccade_duration=max_saccade_duration)
+		#pdb.set_trace()
 
 
 		#print('event extracting finished!')
+	def get_answer_time(self, exp_name, exp_index=0):#获得一个大题内的每道题的时间,基于开始时刻的时间
+		#读取result
+		self.get_exp_time()
+		data = self.result_data
+		ans_data = data["result"][exp_name]["answers"]
+
+		#获取每道题的答题时间
+		def get_ans_time(start_time, end_time):
+			ans_time = [start_time]
+			base_time = self.base_time
+			for ans in ans_data:
+				#pdb.set_trace()
+				time_data = re.search('T(.*?)\.',ans["time"]).group()[1:-1]
+				real_time = self.get_rel_time(time_data, base_time)#seconds
+				if(real_time>start_time and real_time<end_time):
+					ans_time.append(real_time)
+			#pdb.set_trace()
+			return ans_time
+
+		#get duration time
+		#pdb.set_trace()
+		if(exp_name=="stroop"):
+			start_time = self.exp_time_list[exp_index]
+			end_time = self.exp_time_list[exp_index+1]
+			#pdb.set_trace()
+		elif(exp_name=="wcst"):
+			start_time = self.exp_time_list[4]
+			end_time = self.exp_time_list[5]
+		elif(exp_name=="expression"):
+			start_time = self.exp_time_list[5]
+			end_time = self.exp_time_list[6]
+
+		return get_ans_time(start_time, end_time)
+	def per_ques_analysis(self, exp_name, exp_id=0 ):
+		#对每道题的扫视进行分析
+		'''
+		1、取到所有扫视
+		2、将一个阶段分为题目
+		3、统计每道题的扫视次数
+		:return:
+		'''
+		all_sac = self.saccades
+		ans_time = self.get_answer_time(exp_name, exp_id)
+		ques_ans_dict = {}
+		#pdb.set_trace()
+		for sac in all_sac:
+			#如果sac的结束时间在ans_time的某段内，则算入那个problem
+			sac_end_time = sac[6]
+			#找出这个sac所属的question id
+			ques_idx = -1
+			for i in range(len(ans_time)-1):
+				if(ans_time[i]<sac_end_time and ans_time[i+1]>sac_end_time):
+					ques_idx = i
+					if(i in ques_ans_dict):#计算不同question的扫视次数
+						ques_ans_dict[i] += 1#or append sac
+					else:
+						ques_ans_dict[i] = 1
+			#sac的时间超过ans_time末尾时退出
+			if(sac_end_time>ans_time[-1]):
+				break
+		#pdb.set_trace()
+		return ques_ans_dict
+
 
 	def detect_errors(self, outlier_threshold=0.5):
 		"""
@@ -121,6 +188,7 @@ class gazeAnalysis(object):
 		plt.legend()
 		#plt.ylabel('')
 		plt.savefig('output/saccade_analysis.png')
+
 
 	def reconstruct_feature(self):
 		'''
@@ -195,44 +263,54 @@ class gazeAnalysis(object):
 		#print(len(self.rec_saccades[0]))
 		#print('saccades reconstructing finished!')
 
-
-	def get_exp_idx(self, time_vec):
+	def get_rel_time(self, time_str, time_str_base):
+		base_time = datetime.strptime(time_str_base, '%H:%M:%S')
+		now_time = datetime.strptime(time_str, '%H:%M:%S')
+		dur = (now_time - base_time).seconds
+		# pdb.set_trace()
+		return dur
+	def get_exp_time(self):
 		'''
 		根据result.json找到各阶段时间
 		根据event时间判断在哪个experiment
 		:param time_vec:
 		:return:
 		'''
-		def get_rel_time(time_str,time_str_base):
-			base_time = datetime.strptime(time_str_base,'%H:%M:%S')
-			now_time = datetime.strptime(time_str,'%H:%M:%S')
-			dur = (now_time-base_time).seconds
-			#pdb.set_trace()
-			return dur#(datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
+		#(datetime.strptime(time_str,'%H:%M:%S')-datetime.strptime(time_str_base,'%H:%M:%S')).seconds
 		base_time = self.base_time
 		times = self.result_times
 		#if('StroopTest_P1 Start' not in times.keys()):
 			#print('Key Error!')
 			#print(self.eye_path)
 
-		stroop1_start = get_rel_time(times['StroopTest_P1 Start'].split(' ')[1], base_time)
+		stroop1_start = self.get_rel_time(times['StroopTest_P1 Start'].split(' ')[1], base_time)
 		#stroop1_end = get_rel_time(times['StroopTest_P1 Finish'].split(' ')[1], base_time)
-		stroop2_start = get_rel_time(times['StroopTest_P2 Start'].split(' ')[1], base_time)
+		stroop2_start = self.get_rel_time(times['StroopTest_P2 Start'].split(' ')[1], base_time)
 		#stroop2_end = get_rel_time(times['StroopTest_P2 Finish'].split(' ')[1], base_time)
-		stroop3_start = get_rel_time(times['StroopTest_P3 Start'].split(' ')[1], base_time)
+		stroop3_start = self.get_rel_time(times['StroopTest_P3 Start'].split(' ')[1], base_time)
 		#stroop3_end = get_rel_time(times['StroopTest_P3 Finish'].split(' ')[1], base_time)
-		stroop4_start = get_rel_time(times['StroopTest_P4 Start'].split(' ')[1], base_time)
+		stroop4_start = self.get_rel_time(times['StroopTest_P4 Start'].split(' ')[1], base_time)
 		#stroop4_end = get_rel_time(times['StroopTest_P4 Finish'].split(' ')[1], base_time)
 
-		wcst_start = get_rel_time(times['WCST Start'].split(' ')[1], base_time)
+		wcst_start = self.get_rel_time(times['WCST Start'].split(' ')[1], base_time)
 		#wcst_end = get_rel_time(times['WCST Finish'].split(' ')[1], base_time)
 
-		expression_start = get_rel_time(times['Expression Start'].split(' ')[1], base_time)
+		expression_start = self.get_rel_time(times['Expression Start'].split(' ')[1], base_time)
 		#if('Expression Finish' not in times.keys()):
 			#print(self.eye_path)
-		expression_end = get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
-		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]
+		expression_end = self.get_rel_time(times['Expression Finish'].split(' ')[1], base_time)
+		time_list = [stroop1_start,stroop2_start,stroop3_start,stroop4_start,wcst_start,expression_start,expression_end]#这里没有考虑end时间
+		self.exp_time_list = time_list
+		'''
 		#pdb.set_trace()
+		for i in range(len(time_list)-1):#i~[0,5]
+			if(time_vec[0]>time_list[i] and time_vec[1]<time_list[i+1]):
+				return i
+		return -1#不在范围内id就为-1
+		'''
+	def get_exp_idx(self, time_vec):
+		self.get_exp_time()
+		time_list = self.exp_time_list
 		for i in range(len(time_list)-1):#i~[0,5]
 			if(time_vec[0]>time_list[i] and time_vec[1]<time_list[i+1]):
 				return i
@@ -312,7 +390,7 @@ def json2np(eye_data):
 	while (data_idx < len(eye_data)):
 		guide_time = round(frame_idx * 0.033, 6)
 		data = eye_data[data_idx]
-		act_time = round(data["timestamp_us"] * 10 ** (-6), 6)
+		act_time = round(data["timestamp_us"] * 10 ** (-6), 6)#把时间换算成秒
 		if (guide_time + 0.01 < act_time):
 			event_list.append([guide_time, np.nan, np.nan])
 		else:
@@ -444,8 +522,18 @@ if __name__ == '__main__':
 								conf.saccade_min_velocity, conf.max_saccade_duration,eye_path=eye_path)
 	#extractor.time_series_analysis()
 	#extractor.analyze_fixations()
-	pdb.set_trace()
-	feautre_map = extractor.get_feature_map()
-	print(feautre_map.shape)
+	#pdb.set_trace()
+	#feautre_map = extractor.get_feature_map()
+	#print(feautre_map.shape)
+	ans = extractor.per_ques_analysis("stroop",exp_id=3)
+	#pdb.set_trace()
+	count_list = [ans[i] for i in sorted(ans)]#不一定每道题都有扫视
+	#pdb.set_trace()
+	mean_v = np.mean(count_list)
+	var_v = np.var(count_list)
+	max_v = np.max(var_v)
+	print("mean count:" ,mean_v)
+	print(var_v)
+	print(max_v)
 
 

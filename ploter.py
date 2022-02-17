@@ -160,7 +160,7 @@ class ploter(object):
         #self.draw_gazePoints()
         #pdb.set_trace()
         final_clip = self.merge_ani()
-        pdb.set_trace()
+        #pdb.set_trace()
         final_clip.write_videofile(merge_save_path)
         print('Merge Finished!')
 
@@ -250,6 +250,7 @@ class ploter(object):
         event_list = []
         num_gaze = len(self.gaze_events)
         num_sac = len(self.sac_events)
+        pdb.set_trace()
         ge = self.gaze_events
         se = self.sac_events
         gaze_idx = 0
@@ -317,6 +318,9 @@ merge_save_name = 'output/Stroop1_merged.mp4'
 #gd_img_path = 'data/gd_img/Stroop_1_1102x620.png'
 #gd image
 if __name__ == '__main__':
+    print('start')
     plot = ploter(eye_move_path,start_time,end_time,img_width,img_height,gd_img_path,event_save_name, point_save_name)
+    print('1')
     #plot.draw_gazePoints()
-    plot.get_merge_ani(merge_save_name)
+    #plot.get_merge_ani(merge_save_name)
+    plot.draw_events()

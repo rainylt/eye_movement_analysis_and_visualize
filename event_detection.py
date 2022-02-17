@@ -76,7 +76,7 @@ def get_fixation_list(gaze, errors, xi, yi, ti, fixation_radius_threshold, fixat
 				fixation.append(np.var(gazey))
 				fixation.append(gazet[0])  # 4-5. t_start, t_end
 				fixation.append(gazet[-1])
-				fixation.append(gaze_indices[0])  # 6-7. index_start, index_end
+				fixation.append(gaze_indices[0])  # 6-7. index_start, index_end# gaze记录的index，30Hz的记录频率
 				fixation.append(gaze_indices[-1])
 
 				#ds = ((pupil_diameter[start_index:(end_index+1), 1] + pupil_diameter[start_index:(end_index+1), 2]) / 2.)[np.logical_not(errors[start_index:(end_index+1)])]
@@ -227,7 +227,7 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 		#gazet = gaze_value[ti][np.logical_not(errors[start_index:(end_index + 1)])]
 		gazex = gaze[start_index:(end_index + 1), xi][np.logical_not(errors[start_index:(end_index + 1)])]
 		gazey = gaze[start_index:(end_index + 1), yi][np.logical_not(errors[start_index:(end_index + 1)])]
-		gazet = gaze[start_index:(end_index + 1), ti][np.logical_not(errors[start_index:(end_index + 1)])]
+		gazet = gaze[start_index:(end_index + 1), ti][np.logical_not(errors[start_index:(end_index + 1)])]#时间，相对开始时的时间。*10^(-6)为时间。
 		#gaze_value
 		#dx = np.abs(gazex[1:] - gazex[:-1])
 		#dy = np.abs(gazey[1:] - gazey[:-1])
@@ -326,7 +326,7 @@ def get_saccade_list(gaze, fixations, xi, yi, ti, fixation_radius_threshold, err
 
 				start_t = gazet[start_angle_index]
 				end_t = gazet[end_angle_index]
-				saccade.append(start_t)
+				saccade.append(start_t)#5-6 开始时间，结束时间
 				saccade.append(end_t)
 				saccade.append(tmp_start_index)  # 7-8. index_start, index_end
 				saccade.append(tmp_end_index)
